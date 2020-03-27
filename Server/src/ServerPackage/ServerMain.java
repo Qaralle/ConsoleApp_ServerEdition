@@ -1,11 +1,15 @@
 package ServerPackage;
 
 import ClassCollection.CollectionTask;
+import ServerPackage.Сommands.Command;
+import packet.CommandA;
 import packet.Person;
 import ServerPackage.IWillNameItLater.WrongTypeOfFieldException;
 import ServerPackage.IWillNameItLater.receiver;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
@@ -21,6 +25,7 @@ public class ServerMain
     private static CollectionTask collectionTask;
     private static receiver CU;
     private static String str;
+    private static boolean isRight=false;
     private static List<String> sendText= new ArrayList<>();
 
     public static void main(String args[]) throws Exception
@@ -46,8 +51,6 @@ public class ServerMain
         } catch (Exception ex) {
             collectionTask.load("C:\\Users\\proge\\IdeaProjects\\test\\src\\PersonClassTest.json");
             CU = new CollectionUnit(collectionTask, "C:\\Users\\proge\\IdeaProjects\\test\\src\\PersonClassTest.json");
-            /*collectionTask.load("C:\\Users\\user\\Documents\\test\\src\\PersonClassTest.json");
-            CU = new CollectionUnit(collectionTask,"C:\\Users\\user\\Documents\\test\\src\\PersonClassTest.json");*/
         }
 
         while (true) {
@@ -91,7 +94,34 @@ public class ServerMain
 
         if (from != null) {
             buffer.flip();
-            String val = new String(finalBuffer.array());
+            CommandA cam = deserialize(finalBuffer.array());
+            String val = cam.toString()+cam.getStringToSend();
+
+            if (isRight){
+                val=cam.gettoUpdate_b()+cam.getStringToSend();
+                isRight=false;
+
+
+            }else if ((val.equals("update")) && (!isRight)){
+                val=cam.gettoUpdate_s();
+                isRight=false;
+            }
+            if (val.equals("remove_by_id")){
+                val=cam.getToremove();
+            }
+            if (val.equals("remove_any_by_nationality")){
+                val=cam.getToremovenat();
+            }
+            if (val.equals("count_less_than_location")){
+                val=cam.getLocat();
+            }
+            if (val.equals("filter_starts_with_name")){
+                val=cam.getStartWithName();
+            }
+            if (val.equals("execute_script")){
+                val=cam.getFileName();
+            }
+
             SustemOut.print("----"+from.toString()+"----");
             SustemOut.print("----"+channel.toString()+"----");
             SustemOut.print("----Сервер получил сообщение со стороны клиента: "+ val+"-----");
@@ -104,6 +134,7 @@ public class ServerMain
                     Stream<Person> personStream = CU.getCT().GetCollection().stream();
                     if(personStream.anyMatch(person -> person.getId() == Long.parseLong(userCommand[1]))){
                         SustemOut.addText("Объект с таким id найден"+"\n");
+                        isRight=true;
                     }else SustemOut.addText("Объект с таким id не найден"+"\n");
                 }else {
                     for (int i = 1; i < userCommand.length; i += 2) {
@@ -114,9 +145,9 @@ public class ServerMain
                 }
             } catch (WrongTypeOfFieldException e) {
                 e.printStackTrace();
-                
+
             }
-             if(SustemOut.getLast().equals("Объект с таким id найден")) str = SustemOut.sendTxt()+"\n";
+             if(SustemOut.getLast().equals("Объект с таким id найден"+"\n")) str = SustemOut.sendTxt();
                 else str = SustemOut.sendTxt()+"\n$";
                 SustemOut.clear();
                 ByteBuffer lol = ByteBuffer.wrap(str.getBytes());
@@ -126,6 +157,17 @@ public class ServerMain
         }
         SustemOut.print( "----Отключение----" );
 
+    }
+    private static CommandA deserialize(byte[] data){
+        try {
+            ObjectInputStream iStream = new ObjectInputStream(new ByteArrayInputStream(data));
+            CommandA obj = (CommandA) iStream.readObject();
+            iStream.close();
+            return obj;
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
 

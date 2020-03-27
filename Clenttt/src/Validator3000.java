@@ -3,26 +3,24 @@
 import packet.Country;
 import packet.WrongTypeOfFieldException;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
 import java.net.*;
 import java.util.Map;
 import java.util.Scanner;
-
+import packet.*;
 /**
  * Абстрактный класс, выполняющий функци инвокера
  * @author Maxim Antonov and Andrey Lyubkin
  */
 public class Validator3000 implements invoker {
     protected Scanner scan;
-    protected FieldSetter fieldSetter = new FieldSetter();
+
 
     protected String userCommand;
     protected String[] userCommand_;
     //protected receiver res;
 
-    String sentence = new String();
+    CommandA sentence;
     String key = new String();
     byte[] finalReceiveData;
     byte[] sendData;
@@ -60,9 +58,9 @@ public class Validator3000 implements invoker {
                         case ("add"):
                             if (userCommand_.length==1) {
                                 key = "add";
-                                fieldSetter.setFields();
-                                String data = key+fieldSetter.getStringToSend();
-                                sendSmth(data);
+                                CommandA com = new CommandA(key);
+                                com.setFields(new Scanner(System.in));
+                                sendSmth(com);
                                 //add.execute(res);
                             }else {
                                 System.out.print("Неверный синтаксис команды. Используйте help."+"\n$");
@@ -72,8 +70,8 @@ public class Validator3000 implements invoker {
                         case ("show"):
                             if (userCommand_.length==1) {
                                 key = "show";
-                                sendSmth(key);
-                                //show.execute(res);
+                                CommandA sendCommand = new CommandA(key);
+                                sendSmth(sendCommand);
                             }else {
                                 System.out.print("Неверный синтаксис команды. Используйте help."+"\n$");
                             }
@@ -82,7 +80,8 @@ public class Validator3000 implements invoker {
                         case ("info"):
                             if (userCommand_.length==1) {
                                 key = "info";
-                                sendSmth(key);
+                                CommandA sendCommand = new CommandA(key);
+                                sendSmth(sendCommand);
                                 //info.execute(res);
                             }else {
                                 System.out.print("Неверный синтаксис команды. Используйте help."+"\n$");
@@ -94,11 +93,12 @@ public class Validator3000 implements invoker {
                             if (userCommand_.length == 2) {
                                 long checkType1 = Long.parseLong(userCommand_[1]);
                                 key = "update";
-                                sendSmth(key+"="+userCommand_[1]);
+                                CommandA sendCommand = new CommandA(key,checkType1);
+                                sendSmth(sendCommand);
                                 String s = new String(finalReceiveData);
-                                if(s.equals("Объект с таким id найден\n")){
-                                    fieldSetter.setFields();
-                                    sendSmth(key+"="+"id"+"="+userCommand_[1]+fieldSetter.getStringToSend());
+                                if(s.equals("Объект с таким id найден"+"\n" )){
+                                    sendCommand.setFields(new Scanner(System.in));
+                                    sendSmth(sendCommand);
                                 }
                             }else {
                                 System.out.print("Неверный синтаксис команды. Используйте help."+"\n$");
@@ -109,7 +109,9 @@ public class Validator3000 implements invoker {
                             if (userCommand_.length==1) {
                                 //clear.execute(res);
                                 key = "clear";
-                                sendSmth(key);
+                                CommandA sendCommand = new CommandA(key);
+                                sendSmth(sendCommand);
+                                //sendSmth(key);
                             }else {
                                 System.out.print("Неверный синтаксис команды. Используйте help."+"\n$");
                             }
@@ -119,11 +121,11 @@ public class Validator3000 implements invoker {
                         case ("remove_by_id"):
                             if(userCommand_.length == 2) {
                                 long checkType = Long.parseLong(userCommand_[1]);
-                                //bufferMap.put("file_name", userCommand_[1].trim());
-                                //remove_by_id.getTransporter().SetParams(bufferMap);
-                                //remove_by_id.execute(res);
+
                                 key = "remove_by_id";
-                                sendSmth(key+"="+"id"+"="+userCommand_[1]);
+                                CommandA sendCommand = new CommandA(key,checkType);
+                                sendSmth(sendCommand);
+                                //sendSmth(key+"="+"id"+"="+userCommand_[1]);
                             }else {
                                 System.out.print("Неверный синтаксис команды. Используйте help."+"\n$");
                             }
@@ -134,7 +136,8 @@ public class Validator3000 implements invoker {
                             if (userCommand_.length==1) {
                                 //removeHead.execute(res);
                                 key = "remove_head";
-                                sendSmth(key);
+                                CommandA sendCommand = new CommandA(key);
+                                sendSmth(sendCommand);
                             }else {
                                 System.out.print("Неверный синтаксис команды. Используйте help."+"\n$");
                             }
@@ -145,11 +148,11 @@ public class Validator3000 implements invoker {
                             if(userCommand_.length == 2) {
                                 userCommand_[1] = userCommand_[1].toUpperCase();
                                 Country checkType2 = Country.valueOf(userCommand_[1]);
-                                //bufferMap.put("nationality", userCommand_[1].trim());
-                                //removeAnyByNationality.getTransporter().SetParams(bufferMap);
-                                //removeAnyByNationality.execute(res);
+
                                 key = "remove_any_by_nationality";
-                                sendSmth(key+"="+"nationality"+"="+userCommand_[1]);
+                                CommandA sendCommand = new CommandA(key, checkType2);
+                                sendSmth(sendCommand);
+                                //sendSmth(key+"="+"nationality"+"="+userCommand_[1]);
                             }else {
                                 System.out.print("Неверный синтаксис команды. Используйте help."+"\n$");
                             }
@@ -158,11 +161,11 @@ public class Validator3000 implements invoker {
 
                         case ("count_less_than_location"):
                             if(userCommand_.length == 2) {
-                                bufferMap.put("location", userCommand_[1].trim());
-                                //countLessThanLocation.getTransporter().SetParams(bufferMap);
-                                //countLessThanLocation.execute(res);
+
                                 key = "count_less_than_location";
-                                sendSmth(key+"="+"location"+"="+userCommand_[1]);
+                                CommandA sendCommand = new CommandA(key, new Location(0.0f,0.0f,userCommand_[1].trim()));
+                                sendSmth(sendCommand);
+
                             }else {
                                 System.out.print("Неверный синтаксис команды. Используйте help."+"\n$");
                             }
@@ -171,11 +174,11 @@ public class Validator3000 implements invoker {
 
                         case ("filter_starts_with_name"):
                             if(userCommand_.length == 2) {
-                                //bufferMap.put("name", userCommand_[1].trim());
-                                //filterStartsWithName.getTransporter().SetParams(bufferMap);
-                                //filterStartsWithName.execute(res);
                                 key = "filter_starts_with_name";
-                                sendSmth(key+"="+"name"+"="+userCommand_[1]);
+                                CommandA sendCommand = new CommandA(key, userCommand_[1]);
+                                sendSmth(sendCommand);
+
+                                //sendSmth(key+"="+"name"+"="+userCommand_[1]);
                             }else {
                                 System.out.print("Неверный синтаксис команды. Используйте help."+"\n$");
                             }
@@ -184,9 +187,10 @@ public class Validator3000 implements invoker {
 
                         case ("save"):
                             if (userCommand_.length==1) {
-                                //save.execute(res);
+
                                 key = "save";
-                                sendSmth(key);
+                                CommandA sendCommand = new CommandA(key);
+                                sendSmth(sendCommand);
                             }else {
                                 System.out.print("Неверный синтаксис команды. Используйте help."+"\n$");
                             }
@@ -202,7 +206,8 @@ public class Validator3000 implements invoker {
                                     throw new FileNotFoundException();
                                 }
                                 key = "execute_script";
-                                sendSmth(key+"="+"file_name"+"="+userCommand_[1]);
+                                CommandA sendCommand = new CommandA(key,userCommand_[1]);
+                                sendSmth(sendCommand);
                             }else {
                                 System.out.print("Неверный синтаксис команды. Используйте help."+"\n$");
                             }
@@ -212,12 +217,8 @@ public class Validator3000 implements invoker {
                             if (userCommand_.length==1) {
                                 //exit.execute(res);
                                 key = "exit";
-                                try {
-                                    sendSmth(key);
-                                }catch (SocketTimeoutException ex){
-                                    System.out.println("Закрываем клиент и сервер");
-                                    System.exit(0);
-                                }
+                                CommandA sendCommand = new CommandA(key);
+                                sendSmth(sendCommand);
                             }else {
                                 System.out.print("Неверный синтаксис команды. Используйте help."+"\n$");
                             }
@@ -225,7 +226,8 @@ public class Validator3000 implements invoker {
                             if (userCommand_.length==1) {
                                 //history.execute(res);
                                 key = "history";
-                                sendSmth(key);
+                                CommandA sendCommand = new CommandA(key);
+                                sendSmth(sendCommand);
                             }else {
                                 System.out.print("Неверный синтаксис команды. Используйте help."+"\n$");
                             }
@@ -236,9 +238,9 @@ public class Validator3000 implements invoker {
                             if (userCommand_.length==1) {
                                 //addIfMin.execute(res);
                                 key = "add_if_min";
-                                fieldSetter.setFields();
-                                String data = key+fieldSetter.getStringToSend();
-                                sendSmth(data);
+                                CommandA com = new CommandA(key);
+                                com.setFields(new Scanner(System.in));
+                                sendSmth(com);
                             }else {
                                 System.out.print("Неверный синтаксис команды. Используйте help."+"\n$");
                             }
@@ -249,7 +251,8 @@ public class Validator3000 implements invoker {
                             if (userCommand_.length==1) {
                                 //help.execute(res);
                                 key = "help";
-                                sendSmth(key);
+                                CommandA sendCommand = new CommandA(key);
+                                sendSmth(sendCommand);
                             }else {
                                 System.out.print("Неверный синтаксис команды. Используйте help."+"\n$");
                             }
@@ -266,6 +269,7 @@ public class Validator3000 implements invoker {
                     }
                 } catch (NumberFormatException ex) {
                     System.out.print("Неподходящее значения для поля\n$");
+
 
                 } catch (FileNotFoundException ex) {
                     System.out.print("Файл не найден\n$");
@@ -284,17 +288,34 @@ public class Validator3000 implements invoker {
 
 
     }
-    private void sendSmth(String data) throws IOException {
+    private byte[] serialaze(CommandA ob){
+
+        try{
+            ByteArrayOutputStream baos = new ByteArrayOutputStream(2048);
+            ObjectOutputStream oos = new ObjectOutputStream(baos);
+            oos.writeObject(ob);
+            oos.close();
+            byte[] obj = baos.toByteArray();
+            baos.close();
+            return obj;
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+
+    }
+    private void sendSmth(CommandA data) throws IOException {
         clientSocket = new DatagramSocket();
         InetAddress IPAddress = InetAddress.getByName(null);
         sentence = data;
-        sendData = sentence.getBytes();
+        sendData = serialaze(data);
         DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, 1228);
         clientSocket.send(sendPacket);
-        //clientSocket.setSoTimeout(5000);
-        DatagramPacket hui = new DatagramPacket(receiveData,receiveData.length);
-        clientSocket.receive(hui);
-        int size = hui.getLength();
+        clientSocket.setSoTimeout(5000);
+        DatagramPacket pack = new DatagramPacket(receiveData,receiveData.length);
+        clientSocket.receive(pack);
+        int size = pack.getLength();
         finalReceiveData = new byte[size];
         for (int i = 0; i < size; ++i){
             finalReceiveData[i] = receiveData[i];

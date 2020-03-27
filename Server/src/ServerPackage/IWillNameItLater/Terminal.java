@@ -112,6 +112,7 @@ public abstract class Terminal {
                         case ("update"):
                             if (userCommand_.length == 2) {
                                 if (res.getCT().GetCollection().size()==0){
+
                                     SystemOut.addText("Коллекция пуста!");
                                 }else {
                                     bufferMap.put("id", userCommand_[1].trim());
@@ -119,6 +120,7 @@ public abstract class Terminal {
                                         if (Long.parseLong(bufferMap.get("id")) == res.getCT().GetCollection().get(i).getId()) {
                                             bufferMap.put("index", String.valueOf(i));
                                             update.getTransporter().SetParams(bufferMap);
+                                            update.getTransporter().setFields(res);
                                             update.execute(res);
                                             break;
                                         }

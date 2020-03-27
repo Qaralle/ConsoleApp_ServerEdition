@@ -137,7 +137,7 @@ public class CollectionUnit implements receiver {
         loc.SetName(nameL_);
         fp.LocationReplace(loc);
 
-        if(index!= null){
+        if(index>=0){
             ct.GetCollection().get(index).setEverything(nameP_, coo, height_, eyeColor_, hairColor_, nationality_, loc);
         }else {
 
